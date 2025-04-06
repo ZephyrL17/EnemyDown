@@ -1,5 +1,12 @@
 package plugin.enemydown.command;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,11 +38,13 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
   public static final String NORMAL = "normal";
   public static final String HARD = "hard";
   public static final String NONE = "none";
+  public static final String LIST = "list";
 
 
   private Main main;
   private List<PlayerScore> playerScoreList = new ArrayList<>();
   private List<Entity> spawnEntityList = new ArrayList<>();
+
   /**
    * 制限時間内にランダムで出現する敵を倒して、スコアを獲得するゲームを実行するコマンドです。
    * スコアは敵によって変わり、倒せた数の合計によってスコアが変動します。
@@ -48,6 +57,30 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
 
   @Override
   public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
+    if (args.length == 1 && (LIST.equals(args[0]))){
+
+      try(Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spigot_server", "root", "Zephyrright7010&");
+
+          Statement statement = con.createStatement();
+          ResultSet resultset = statement.executeQuery("select * from player_score;")) {
+
+        while(resultset.next()){
+
+          int id = resultset.getInt("id");
+          String name = resultset.getString("player_name");
+          int score = resultset.getInt("score");
+          String difficulty = resultset.getString("difficulty");
+
+          LocalDateTime date = LocalDateTime.parse(resultset.getString("registered_at"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+          player.sendMessage(id + " | " + name + " | " + score + " | " + difficulty + " | " + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        }
+
+      } catch(SQLException e) {
+        e.printStackTrace();
+      }
+      return false;
+    }
     String difficulty = getDifficulty(player, args);
     if (difficulty.equals(NONE)){
       return false;
@@ -166,6 +199,20 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
         player.sendTitle("ゲームが終了しました。",
             nowPlayerScore.getPlayerName() + "合計" + nowPlayerScore.getScore() + "点!",
             0,30,0);
+
+        try(Connection con = DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/spigot_server",
+            "root",
+            "Zephyrright7010&");
+            Statement statement = con.createStatement()) {
+
+          statement.executeUpdate(
+                  "insert player_score(player_name, score, difficulty, registered_at)"
+                  + "values('"+ nowPlayerScore.getPlayerName() + "'," + nowPlayerScore.getScore() + ",'" + difficulty + "', now());");
+
+        } catch(SQLException e){
+              e.printStackTrace();
+        }
 
         spawnEntityList.forEach(Entity::remove);
         spawnEntityList.clear();
