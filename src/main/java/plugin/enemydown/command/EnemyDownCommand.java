@@ -65,7 +65,7 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
           "root",
           "Zephyrright7010&")) {
 
-          PreparedStatement ptsmt = con.prepareStatement("select * from player_score");
+          PreparedStatement ptsmt = con.prepareStatement("SELECT * FROM player_score");
           ResultSet resultset = ptsmt.executeQuery();
 
             while (resultset.next()) {
@@ -209,9 +209,13 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
             "root",
             "Zephyrright7010&");
 
-            PreparedStatement ptsmt = con.prepareStatement("insert player_score(player_name, score, difficulty, registered_at)"
-                + "values('"+ nowPlayerScore.getPlayerName() + "'," + nowPlayerScore.getScore() + ",'" + difficulty + "', now());")) {
-            ptsmt.executeUpdate();
+            PreparedStatement pstmt = con.prepareStatement(
+
+                "INSERT INTO player_score(player_name, score, difficulty, registered_at) VALUES(?, ? ,?, now())")) {
+                  pstmt.setString(1,nowPlayerScore.getPlayerName());
+                  pstmt.setInt(2, nowPlayerScore.getScore());
+                  pstmt.setString(3, difficulty);
+                  pstmt.executeUpdate();
 
         } catch(SQLException e) {
               e.printStackTrace();
