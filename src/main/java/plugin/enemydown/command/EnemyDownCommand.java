@@ -2,6 +2,7 @@ package plugin.enemydown.command;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -57,27 +58,32 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
 
   @Override
   public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
-    if (args.length == 1 && (LIST.equals(args[0]))){
+    if (args.length == 1 && (LIST.equals(args[0]))) {
 
-      try(Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spigot_server", "root", "Zephyrright7010&");
+      String sql = "select * from player_score";
 
-          Statement statement = con.createStatement();
-          ResultSet resultset = statement.executeQuery("select * from player_score;")) {
+      try (Connection con = DriverManager.getConnection(
+          "jdbc:mysql://localhost:3306/spigot_server",
+          "root",
+          "Zephyrright7010&")) {
 
-        while(resultset.next()){
+          PreparedStatement ptsmt = con.prepareStatement(sql);
+          ResultSet resultset = ptsmt.executeQuery();
 
-          int id = resultset.getInt("id");
-          String name = resultset.getString("player_name");
-          int score = resultset.getInt("score");
-          String difficulty = resultset.getString("difficulty");
+            while (resultset.next()) {
+              int id = resultset.getInt("id");
+              String name = resultset.getString("player_name");
+              int score = resultset.getInt("score");
+              String difficulty = resultset.getString("difficulty");
 
-          LocalDateTime date = LocalDateTime.parse(resultset.getString("registered_at"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-          player.sendMessage(id + " | " + name + " | " + score + " | " + difficulty + " | " + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        }
-
-      } catch(SQLException e) {
-        e.printStackTrace();
+              LocalDateTime date = LocalDateTime.parse(resultset.getString("registered_at"),
+                  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+              player.sendMessage(id + " | " + name + " | " + score + " | " + difficulty + " | "
+                  + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            }
+          }
+          catch (SQLException e) {
+            e.printStackTrace();
       }
       return false;
     }
@@ -204,13 +210,12 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
             "jdbc:mysql://localhost:3306/spigot_server",
             "root",
             "Zephyrright7010&");
-            Statement statement = con.createStatement()) {
 
-          statement.executeUpdate(
-                  "insert player_score(player_name, score, difficulty, registered_at)"
-                  + "values('"+ nowPlayerScore.getPlayerName() + "'," + nowPlayerScore.getScore() + ",'" + difficulty + "', now());");
+            PreparedStatement ptsmt = con.prepareStatement("insert player_score(player_name, score, difficulty, registered_at)"
+                + "values('"+ nowPlayerScore.getPlayerName() + "'," + nowPlayerScore.getScore() + ",'" + difficulty + "', now());")) {
+            ptsmt.executeUpdate();
 
-        } catch(SQLException e){
+        } catch(SQLException e) {
               e.printStackTrace();
         }
 
