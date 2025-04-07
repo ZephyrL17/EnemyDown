@@ -60,14 +60,12 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
   public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
     if (args.length == 1 && (LIST.equals(args[0]))) {
 
-      String sql = "select * from player_score";
-
       try (Connection con = DriverManager.getConnection(
           "jdbc:mysql://localhost:3306/spigot_server",
           "root",
           "Zephyrright7010&")) {
 
-          PreparedStatement ptsmt = con.prepareStatement(sql);
+          PreparedStatement ptsmt = con.prepareStatement("select * from player_score");
           ResultSet resultset = ptsmt.executeQuery();
 
             while (resultset.next()) {
