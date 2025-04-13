@@ -103,7 +103,7 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
    * @param args コマンド引数
    * @return 難易度
    */
-  private String getDifficulty(Player player, String[] args) {
+  String getDifficulty(Player player, String[] args) {
     if (args.length == 1 && (EASY.equals(args[0]) || NORMAL.equals(args[0]) || HARD.equals(args[0]))){
       return args[0];
     }
@@ -243,7 +243,7 @@ public class EnemyDownCommand extends BaseCommand implements Listener {
    * @return 敵
    */
   private EntityType getEnemy(String difficulty) {
-    List<EntityType> enemyList = new ArrayList<>();
+    List<EntityType> enemyList;
     switch (difficulty) {
       case NORMAL -> enemyList = List.of(EntityType.ZOMBIE, EntityType.SKELETON);
       case HARD -> enemyList = List.of(EntityType.ZOMBIE, EntityType.SKELETON, EntityType.WITCH);
