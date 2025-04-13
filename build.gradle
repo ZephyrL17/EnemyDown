@@ -27,6 +27,14 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok:1.18.30'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    testImplementation 'org.mockito:mockito-core:5.+'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 def targetJavaVersion = 21
